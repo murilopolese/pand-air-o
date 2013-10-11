@@ -1,141 +1,15 @@
 <html>
     <head>
         <title>pand-air-o - Leap</title>
-        <script src="./leap.js"></script>
+        <script src="./leap.min.js"></script>
         <script src="./jquery.min.js"></script>
         <script src="./jquery.flot.js"></script>
         <script src="./underscore-min.js"></script>
-        <script>
-        
-        var bufferSize = 30;
-        var delta = 10;
-        var palmBuffer = [];
-        var palmIndex = 0;
-        var thumbBuffer = [];
-        var thumbIndex = 0;
-        
-        var intensity = 1;
-        
-        var flot;
-        
-        function getPalmBuffer() {
-            var res = [];
-            if(palmBuffer.length >= bufferSize) {
-                for(var i = 0; i < bufferSize; i++) {
-                    res[i] = [i, palmBuffer[i][1]];
-                }
-            }
-            return res;
-        }
-        function addPalmBuffer(palmNormal) {
-            if(palmBuffer.length > bufferSize) {
-                palmBuffer = palmBuffer.slice(palmBuffer.length-bufferSize, palmBuffer.length);
-            }
-            palmBuffer.push([palmIndex, palmNormal]);
-            palmIndex++;
-        }
- 
-        function getThumbBuffer() {
-            var res = [];
-            if(thumbBuffer.length >= bufferSize) {
-                for(var i = 0; i < bufferSize; i++) {
-                    res[i] = [i, thumbBuffer[i][1]];
-                }
-            }
-            return res;
-        }
-        function addThumbBuffer(thumbAngle) {
-            if(thumbBuffer.length > bufferSize) {
-                thumbBuffer = thumbBuffer.slice(thumbBuffer.length-bufferSize, thumbBuffer.length);
-            }
-            thumbBuffer.push([thumbIndex, thumbAngle]);
-            thumbIndex++;
-        }
-        
-        
-        function palmBufferAnalysis() {
-            var slope = 100*(palmBuffer[bufferSize][1]-palmBuffer[bufferSize-delta][1])/delta;
-            return slope;
-        }
-        function thumbBufferAnalysis() {
-            var slope = 100*(thumbBuffer[bufferSize][1]-thumbBuffer[bufferSize-delta][1])/delta;
-            return slope;
-        }
-        function fingerHit(triggerSlope, callback) {
-            if(palmBufferAnalysis() > triggerSlope) {
-                callback();
-            }
-        }
-        function heelHit(triggerSlope, callback) {
-            if(palmBufferAnalysis() < triggerSlope) {
-                intensity = palmBufferAnalysis()/5;
-                callback();
-            }
-        }
-        function thumbHit(triggerSlope, callback) {
-            if(thumbBufferAnalysis() > triggerSlope) {
-                intensity = thumbBufferAnalysis()/10;
-                callback();
-            }
-        }
-        
-        function playBeat (id) {
-            var tmpAudio = document.getElementById(id).cloneNode(true);
-            tmpAudio.play();
-        }
-        function playBeat2 (id) {
-            var tmpAudio = document.getElementById(id);
-            tmpAudio.volume = 1;
-            if(tmpAudio.paused)
-                tmpAudio.play();
-        }
-        
-        $(document).ready(function() {
-            
-            flot = $.plot('#output', [getPalmBuffer(), getThumbBuffer()], {
-    			series: {
-    				shadowSize: 0	// Drawing is faster without shadows
-    			},
-    			yaxis: {
-    				min: -2,
-    				max: 2
-    			},
-    			xaxis: {
-    				min: 0,
-                    max: bufferSize
-    			}
-    		});
-            var interval = setInterval(function() {
-                flot.setData([getPalmBuffer(), getThumbBuffer()]);
-                flot.draw();
-            }, 100);
-            
-            Leap.loop(function(frame) {
-                if(frame.hands.length) {
-                    var hand = frame.hands[0];
-                    addPalmBuffer(hand.palmNormal[2]);
-                    addThumbBuffer(hand.palmNormal[0]);
-
-                    fingerHit(2, function() {
-                        playBeat2('Finger_drum_A');
-                    });
-                    heelHit(-2, function() {
-                        playBeat2('Heel_drum_A');
-                    })
-                    thumbHit(2, function() {
-                        playBeat2('Thumb_drum_A');
-                    })
-                }
-            });
-            
-        });
-        
-        </script>
         <style>
-        #output {
-            width: 100%;
-            height: 100%;
-        }
+            #output {
+                width: 100%;
+                height: 100%;
+            }
         </style>
     </head>
     <body>
